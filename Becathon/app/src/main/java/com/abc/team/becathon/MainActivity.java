@@ -2,40 +2,32 @@ package com.abc.team.becathon;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.RemoteException;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
 
-import org.altbeacon.beacon.Beacon;
-import org.altbeacon.beacon.BeaconConsumer;
-import org.altbeacon.beacon.BeaconManager;
-import org.altbeacon.beacon.BeaconParser;
-import org.altbeacon.beacon.Identifier;
-import org.altbeacon.beacon.MonitorNotifier;
-import org.altbeacon.beacon.RangeNotifier;
-import org.altbeacon.beacon.Region;
+import java.util.ArrayList;
 
-import java.util.Collection;
 
-public class MainActivity extends AppCompatActivity implements BeaconConsumer{
-
-    private BeaconManager beaconManager;
+public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
-    private static String TAG = "testBeacon";
+    private static final String TAG = "tag";
+    Spinner dropDown;
+    Button button;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_main_activity);
-
-        beaconManager = BeaconManager.getInstanceForApplication(this);
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
-        beaconManager.bind(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -55,8 +47,29 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
             }
         }
 
-    }
+        dropDown = (Spinner) findViewById(R.id.drop_down);
+        ArrayList<String> classes = new ArrayList<>();
+        classes.add("Ios");
+        classes.add("Android");
+        classes.add("Python");
+        classes.add("C++");
+        classes.add("Git");
+        classes.add("Java");
 
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item,classes);
+        dropDown.setAdapter(adapter);
+
+        button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               // Log.d(TAG,dropDown.getSelectedItem().toString());
+                Intent intent = new Intent(getApplicationContext(),Navigation.class);
+                intent.putExtra("selected_class",dropDown.getSelectedItem().toString());
+                startActivity(intent);
+            }
+        });
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -84,56 +97,5 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        beaconManager.unbind(this);
-    }
 
-    @Override
-    public void onBeaconServiceConnect() {
-        final Region region = new Region("myBeacons", Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d"),null,null);
-
-        beaconManager.setMonitorNotifier(new MonitorNotifier() {
-            @Override
-            public void didEnterRegion(Region region) {
-                try {
-                    beaconManager.startRangingBeaconsInRegion(region);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void didExitRegion(Region region) {
-                try {
-                    beaconManager.stopRangingBeaconsInRegion(region);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void didDetermineStateForRegion(int i, Region region) {
-
-            }
-        });
-
-        beaconManager.setRangeNotifier(new RangeNotifier() {
-            @Override
-            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                for (Beacon beacon : beacons){
-
-                    Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
-                }
-            }
-        });
-
-        try {
-            beaconManager.startMonitoringBeaconsInRegion(region);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-
-    }
 }
