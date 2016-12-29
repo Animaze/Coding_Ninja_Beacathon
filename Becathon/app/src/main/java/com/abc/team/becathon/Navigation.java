@@ -1,14 +1,13 @@
 package com.abc.team.becathon;
 
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.RemoteException;
-import android.support.v7.app.AlertDialog;
+import android.support.annotation.IntegerRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -19,7 +18,6 @@ import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
-import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
@@ -28,17 +26,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class Navigation extends AppCompatActivity implements BeaconConsumer {
-
+    Pair<Integer,Integer> userLocation;
+    Pair<Integer,Integer> destinationLocation;
+    String iTAG = "abc";
     private BeaconManager beaconManager;
     private static String TAG = "testBeacon";
     TextView tv_currentInstruction;
     TextView tv_currentClass;
     ListView lv_previousInstruction;
-    Button bt_stopNavigation;
+    //Button bt_stopNavigation;
     ArrayList<String> instructions;
     ArrayAdapter<String> adapter;
     String classSelected = "Python";
     int cnt = 0;
+    MyMap myMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,25 +50,45 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         beaconManager = BeaconManager.getInstanceForApplication(this);
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
         beaconManager.bind(this);
-        if(getIntent().getStringExtra("selected_class")!=null){
-            classSelected = getIntent().getStringExtra("selected_class");
-        }
+
 
         tv_currentInstruction = (TextView) findViewById(R.id.current_instruction);
         tv_currentClass = (TextView) findViewById(R.id.current_class);
-        bt_stopNavigation = (Button) findViewById(R.id.stop_button);
+        //bt_stopNavigation = (Button) findViewById(R.id.stop_button);
         lv_previousInstruction = (ListView) findViewById(R.id.previous_instructions);
         instructions = new ArrayList<>();
         adapter = new ArrayAdapter<String>(this,R.layout.previous_instructions_layout,instructions);
+        myMap = (MyMap) findViewById(R.id.my_map);
+        myMap.setDrawingCacheEnabled(true);
 
-        bt_stopNavigation.setOnClickListener(new View.OnClickListener() {
+ /*       bt_stopNavigation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //startActivity(new Intent(getApplicationContext(),MainActivity.class));
 
-                changeInstruction(String.valueOf(cnt++));
+                //changeInstruction(String.valueOf(cnt++));
+                ArrayList<Pair<Integer,Integer>> points = new ArrayList<Pair<Integer, Integer>>();
+                Display mdisp = getWindowManager().getDefaultDisplay();
+                Point mdispSize = new Point();
+                mdisp.getSize(mdispSize);
+                int width = mdispSize.x;
+                int height = mdispSize.y;
+                height -= 1500;
+                width -= 135;
+                Log.d(iTAG,"height"+String.valueOf(height));
+                Log.d(iTAG,"width"+String.valueOf(width));
+                int x=12,y=12;
+                points.add(new Pair<Integer, Integer>((width/24)*(x)+20,(height/24)*(y)+20));
+                //points.add(new Pair<Integer, Integer>((width/24)*x+40,(height/24)*x+40));
+                //points.add(new Pair<Integer, Integer>((width/24)*x+40,(height/24)*x+40));
+
+                myMap.setPoints(points);
+                myMap.invalidate();
+
             }
-        });
+        });*/
+
+
         lv_previousInstruction.setAdapter(adapter);
         lv_previousInstruction.setBackgroundColor(Color.YELLOW);
         tv_currentClass.setText(classSelected + " class");
@@ -81,12 +102,39 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
 
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        LocateUser lUser = new LocateUser();
+        clearCanvas();
+        plotPoints(LocateUser.beacon_pos);
+        if(getIntent().getStringExtra("selected_class")!=null){
+            classSelected = getIntent().getStringExtra("selected_class");
+            if(classSelected.equalsIgnoreCase("Python")){
+                ArrayList<Pair<Integer,Integer>> points = new ArrayList<>();
+                destinationLocation = new Pair<Integer, Integer>(0,24);
+                points.add(destinationLocation);
+                plotPoints(points);
+            }
+            else{
+                ArrayList<Pair<Integer,Integer>> points = new ArrayList<>();
+                destinationLocation = new Pair<Integer, Integer>(24,24);
+                points.add(destinationLocation);
+                plotPoints(points);
+            }
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         beaconManager.unbind(this);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        clearCanvas();
+    }
 
     @Override
     public void onBeaconServiceConnect() {
@@ -120,12 +168,32 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         beaconManager.setRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                for (Beacon beacon : beacons){
 
-                    Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
+                   // Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
                     //changeInstruction(beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
+
+                    ArrayList<Pair<Integer,Integer>> points = new ArrayList<>();
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    ArrayList<Double> distances = new ArrayList<Double>();
+                    for(Beacon beacon : beacons){
+                        distances.add(beacon.getDistance());
+                    }
+                    userLocation = LocateUser.getUserLocation(distances);
+                    points.add(userLocation);
+                    plotPoints(points);
+                    Pair<Double, ArrayList<String>> directions= new Pair<Double, ArrayList<String>>(0.0,new ArrayList<String>());
+                    LocateUser lUser = new LocateUser();
+                    directions = lUser.getDestinationInfo(userLocation,destinationLocation);
+                    ArrayList<String> printDirections = directions.getSecond();
+                    for(String nextDir : printDirections){
+                        changeInstruction(nextDir);
+                    }
+
                 }
-            }
         });
 
         try {
@@ -135,4 +203,36 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         }
 
     }
+
+    public void  plotPoints(ArrayList<Pair<Integer,Integer>> temp){
+
+        ArrayList<Pair<Integer,Integer>> points = new ArrayList<Pair<Integer, Integer>>();
+        //LocateUser lUser = new LocateUser();
+        Display mdisp = getWindowManager().getDefaultDisplay();
+        Point mdispSize = new Point();
+        mdisp.getSize(mdispSize);
+        int width = mdispSize.x;
+        int height = mdispSize.y;
+        height -= 1500;
+        width -= 135;
+        int x=12,y=12;
+        Log.d(iTAG,"height"+String.valueOf(height));
+        Log.d(iTAG,"width"+String.valueOf(width));
+        for(Pair<Integer,Integer> pt : temp){
+            x = pt.getFirst();
+            y = pt.getSecond();
+            points.add(new Pair<Integer, Integer>((width/24)*(x)+20,(height/24)*(y)+20));
+        }
+        myMap.setPoints(points);
+        myMap.invalidate();
+
+
+    }
+
+    public void clearCanvas(){
+        MyMap.clearCanvas = true;
+        MyMap.points = new ArrayList<>();
+        myMap.invalidate();
+    }
+
 }

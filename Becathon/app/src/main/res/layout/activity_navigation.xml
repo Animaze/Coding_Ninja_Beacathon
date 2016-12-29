@@ -7,6 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:id="@+id/nav_view"
     tools:context="com.abc.team.becathon.Navigation">
 
     <TextView
@@ -18,6 +19,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/current_instruction" />
+
     <TextView
         android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
@@ -26,22 +28,27 @@
         android:text="Large Text"
         android:id="@+id/current_instruction"
         android:layout_centerHorizontal="true" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/lv_layout"
+            android:layout_below="@+id/current_instruction"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="250dp">
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/previous_instructions"
+                android:layout_marginTop="59dp"
+                />
+        </LinearLayout>
 
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/previous_instructions"
-        android:layout_below="@+id/current_instruction"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="59dp" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Stop Navigation"
-        android:id="@+id/stop_button"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+    <com.abc.team.becathon.MyMap
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:id="@+id/my_map"
+        android:layout_alignParentBottom="true"/>
 
 
 </RelativeLayout>
