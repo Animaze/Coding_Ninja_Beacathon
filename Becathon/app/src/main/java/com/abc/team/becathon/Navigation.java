@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class Navigation extends AppCompatActivity implements BeaconConsumer {
+    String sample= "";
     Pair<Integer,Integer> userLocation;
     Pair<Integer,Integer> destinationLocation;
     String iTAG = "abc";
@@ -83,7 +84,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
                 //points.add(new Pair<Integer, Integer>((width/24)*x+40,(height/24)*x+40));
                 //points.add(new Pair<Integer, Integer>((width/24)*x+40,(height/24)*x+40));
 
-                myMap.setPoints(points);
+
                 myMap.invalidate();
 
             }
@@ -95,10 +96,18 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         tv_currentClass.setText(classSelected + " class");
     }
 
+
     public void changeInstruction(String newInstruction){
-        instructions.add(0,tv_currentInstruction.getText().toString());
-        adapter.notifyDataSetChanged();
-        tv_currentInstruction.setText(newInstruction);
+        sample = newInstruction;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                instructions.add(0,tv_currentInstruction.getText().toString());
+                adapter.notifyDataSetChanged();
+                tv_currentInstruction.setText(sample);
+            }
+        });
+
     }
 
 
@@ -108,6 +117,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         LocateUser lUser = new LocateUser();
         clearCanvas();
         plotPoints(LocateUser.beacon_pos);
+
         if(getIntent().getStringExtra("selected_class")!=null){
             classSelected = getIntent().getStringExtra("selected_class");
             if(classSelected.equalsIgnoreCase("Python")){
@@ -139,7 +149,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
 
     @Override
     public void onBeaconServiceConnect() {
-        final Region region = new Region("myBeacons", Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d"),null,null);
+        final Region region = new Region("myBeacons", /*Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d")*/null,null,null);
 
         beaconManager.setMonitorNotifier(new MonitorNotifier() {
             @Override
@@ -173,7 +183,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
                     Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
 
                 }
-                if(beacons.size() == 3){
+                //if(beacons.size() == 3){
                     //
                     //changeInstruction(beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
 
@@ -202,8 +212,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
                             changeInstruction(nextDir);
                         }
                     }
-
-                }
+                //}
 
             }
         });
@@ -236,15 +245,33 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
             points.add(new Pair<Integer, Integer>((width/24)*(x)+20,(height/24)*(y)+20));
         }
         myMap.setPoints(points);
-        myMap.invalidate();
 
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                myMap.invalidate();
+            }
+        });
+        //myMap.invalidate();
 
+/*runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                myMap.invalidate();
+            }
+        });*/
     }
 
     public void clearCanvas(){
         MyMap.clearCanvas = true;
         MyMap.points = new ArrayList<>();
-        myMap.invalidate();
+        //myMap.invalidate();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                myMap.invalidate();
+            }
+        });
     }
 
 }

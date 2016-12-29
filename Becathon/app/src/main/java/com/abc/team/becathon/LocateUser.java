@@ -36,18 +36,22 @@ public class LocateUser
     }
 
     public static int getPos(String s) {
-        switch (s)
+        return (int)(Math.random()*3);
+        /*switch (s)
         {
             case "43197": return 2;
             case "11111": return 0;
             case "22222": return 1;
+            case "52779":return 1;
             default: return -1;
-        }
+        }*/
     }
 
     public static Pair<Integer, Integer> getUserLocation(ArrayList<Double> beacon_dist, ArrayList<String> major)  //List of user distance from every beacon
     {
+        return new Pair<Integer, Integer>((int)(Math.random()*24),(int)(Math.random()*24));
 
+        /*//Uncomment this code for working beacons
         double p1, p2, q1, q2; //Point of intersection of two circles
         double d, l, h, x1 = -1, x2 = -1, y1=-1, y2= -1, x3 = -1, y3=-1;
         int found = 0;
@@ -126,8 +130,7 @@ public class LocateUser
             }
 
 
-        }
-
+        }*/
     }
 
     public Pair<Double, ArrayList<String>> getDestinationInfo(Pair<Integer, Integer> user_loc, Pair<Integer, Integer> destination)
