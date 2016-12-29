@@ -34,8 +34,20 @@ public class LocateUser
         this.dest_pos.add(new Pair<Integer, Integer>(0,24));
         this.dest_pos.add(new Pair<Integer, Integer>(24,24));
     }
-    public static Pair<Integer, Integer> getUserLocation(ArrayList<Double> beacon_dist)  //List of user distance from every beacon
+
+    public static int getPos(String s) {
+        switch (s)
+        {
+            case "43197": return 2;
+            case "11111": return 0;
+            case "22222": return 1;
+            default: return -1;
+        }
+    }
+
+    public static Pair<Integer, Integer> getUserLocation(ArrayList<Double> beacon_dist, ArrayList<String> major)  //List of user distance from every beacon
     {
+
         double p1, p2, q1, q2; //Point of intersection of two circles
         double d, l, h, x1 = -1, x2 = -1, y1=-1, y2= -1, x3 = -1, y3=-1;
         int found = 0;
@@ -50,20 +62,24 @@ public class LocateUser
         }
         else
         {
-            int curr = 0;
-            for(int i=0; i<3; i++)
+            for(int i=0; i<beacon_dist.size(); i++)
             {
+                int j =getPos(major.get(i));
+                if(j == -1)
+                {
+                    continue;
+                }
                 if(beacon_dist.get(i) != -1) {
                     if (x1 == -1) {
-                        x1 = beacon_pos.get(curr).getFirst()*4;
-                        y1 = beacon_pos.get(curr).getSecond()*4;
+                        x1 = beacon_pos.get(getPos(major.get(i))).getFirst()*4;
+                        y1 = beacon_pos.get(getPos(major.get(i))).getSecond()*4;
                         if(i==1){
                             x1*=2.7;
                             y1*=2.7;
                         }
                     } else if (x2 == -1) {
-                        x2 = beacon_pos.get(curr).getFirst()*4;
-                        y2 = beacon_pos.get(curr).getSecond()*4;
+                        x2 = beacon_pos.get(getPos(major.get(i))).getFirst()*4;
+                        y2 = beacon_pos.get(getPos(major.get(i))).getSecond()*4;
                         if(i==1){
                             x2*=2.7;
                             y2*=2.7;
@@ -73,8 +89,8 @@ public class LocateUser
                             y2*=2.2;
                         }
                     } else {
-                        x3 = beacon_pos.get(curr).getFirst()*4;
-                        y3 = beacon_pos.get(curr).getSecond()*4;
+                        x3 = beacon_pos.get(j).getFirst()*4;
+                        y3 = beacon_pos.get(j).getSecond()*4;
                         x3*=2.2;
                         y3*=2.2;
                     }

@@ -18,6 +18,7 @@ import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
@@ -59,7 +60,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         instructions = new ArrayList<>();
         adapter = new ArrayAdapter<String>(this,R.layout.previous_instructions_layout,instructions);
         myMap = (MyMap) findViewById(R.id.my_map);
-        myMap.setDrawingCacheEnabled(true);
+        //myMap.setDrawingCacheEnabled(true);
 
  /*       bt_stopNavigation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,7 +139,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
 
     @Override
     public void onBeaconServiceConnect() {
-        final Region region = new Region("myBeacons", /*Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d")*/null,null,null);
+        final Region region = new Region("myBeacons", Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d"),null,null);
 
         beaconManager.setMonitorNotifier(new MonitorNotifier() {
             @Override
@@ -168,32 +169,43 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         beaconManager.setRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+                for(Beacon beacon : beacons){
+                    Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
 
-                   // Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
+                }
+                if(beacons.size() == 3){
+                    //
                     //changeInstruction(beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
 
                     ArrayList<Pair<Integer,Integer>> points = new ArrayList<>();
-                    try {
+                    /*try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                    }
+                    }*/
                     ArrayList<Double> distances = new ArrayList<Double>();
+                    ArrayList<String> major = new ArrayList<String>();
                     for(Beacon beacon : beacons){
+                        Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
                         distances.add(beacon.getDistance());
+                        major.add(beacon.getId2().toString());
                     }
-                    userLocation = LocateUser.getUserLocation(distances);
-                    points.add(userLocation);
-                    plotPoints(points);
-                    Pair<Double, ArrayList<String>> directions= new Pair<Double, ArrayList<String>>(0.0,new ArrayList<String>());
-                    LocateUser lUser = new LocateUser();
-                    directions = lUser.getDestinationInfo(userLocation,destinationLocation);
-                    ArrayList<String> printDirections = directions.getSecond();
-                    for(String nextDir : printDirections){
-                        changeInstruction(nextDir);
+                    userLocation = LocateUser.getUserLocation(distances,major);
+                    if(userLocation.getFirst()!=-1000){
+                        points.add(userLocation);
+                        plotPoints(points);
+                        Pair<Double, ArrayList<String>> directions= new Pair<Double, ArrayList<String>>(0.0,new ArrayList<String>());
+                        LocateUser lUser = new LocateUser();
+                        directions = lUser.getDestinationInfo(userLocation,destinationLocation);
+                        ArrayList<String> printDirections = directions.getSecond();
+                        for(String nextDir : printDirections){
+                            changeInstruction(nextDir);
+                        }
                     }
 
                 }
+
+            }
         });
 
         try {
