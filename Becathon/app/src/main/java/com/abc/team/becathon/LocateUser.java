@@ -16,9 +16,9 @@ public class LocateUser
 
     public LocateUser()
     {
-        this.beacon_pos.add(new Pair<Integer, Integer>(0,2));
-        this.beacon_pos.add(new Pair<Integer, Integer>(24,13));
-        this.beacon_pos.add(new Pair<Integer, Integer>(13,24));
+        this.beacon_pos.add(new Pair<Integer, Integer>(0,1));
+        this.beacon_pos.add(new Pair<Integer, Integer>(4,1));
+        this.beacon_pos.add(new Pair<Integer, Integer>(3,5));
 
         this.obstacle_pos.add(new Pair<Integer, Integer>(13,15));
         this.obstacle_pos.add(new Pair<Integer, Integer>(15,15));
@@ -36,22 +36,21 @@ public class LocateUser
     }
 
     public static int getPos(String s) {
-        return (int)(Math.random()*3);
-        /*switch (s)
+        //return (int)(Math.random()*3);
+        switch (s)
         {
-            case "43197": return 2;
-            case "11111": return 0;
+            case "11111": return 2;
             case "22222": return 1;
-            case "52779":return 1;
+            case "33333": return 0;
             default: return -1;
-        }*/
+        }
     }
 
     public static Pair<Integer, Integer> getUserLocation(ArrayList<Double> beacon_dist, ArrayList<String> major)  //List of user distance from every beacon
     {
-        return new Pair<Integer, Integer>((int)(Math.random()*24),(int)(Math.random()*24));
-
-        /*//Uncomment this code for working beacons
+        //return new Pair<Integer, Integer>((int)(Math.random()*24),(int)(Math.random()*24));
+        double fac1 = 1.5,fac2 = 1.5, fac3 = 1.5, fac4 = 1;
+        //Uncomment this code for working beacons
         double p1, p2, q1, q2; //Point of intersection of two circles
         double d, l, h, x1 = -1, x2 = -1, y1=-1, y2= -1, x3 = -1, y3=-1;
         int found = 0;
@@ -68,6 +67,18 @@ public class LocateUser
         {
             for(int i=0; i<beacon_dist.size(); i++)
             {
+                switch(major.get(i))
+                {
+                    case "11111":  beacon_dist.set(i, beacon_dist.get(i)*1.8);
+                        break;
+
+                    case "22222" : beacon_dist.set(i, beacon_dist.get(i)*1.35);
+                        break;
+
+                    case "33333" : beacon_dist.set(i, beacon_dist.get(i)*1.2);
+                        break;
+
+                }
                 int j =getPos(major.get(i));
                 if(j == -1)
                 {
@@ -75,28 +86,14 @@ public class LocateUser
                 }
                 if(beacon_dist.get(i) != -1) {
                     if (x1 == -1) {
-                        x1 = beacon_pos.get(getPos(major.get(i))).getFirst()*4;
-                        y1 = beacon_pos.get(getPos(major.get(i))).getSecond()*4;
-                        if(i==1){
-                            x1*=2.7;
-                            y1*=2.7;
-                        }
+                        x1 = beacon_pos.get(getPos(major.get(i))).getFirst();
+                        y1 = beacon_pos.get(getPos(major.get(i))).getSecond();
                     } else if (x2 == -1) {
-                        x2 = beacon_pos.get(getPos(major.get(i))).getFirst()*4;
-                        y2 = beacon_pos.get(getPos(major.get(i))).getSecond()*4;
-                        if(i==1){
-                            x2*=2.7;
-                            y2*=2.7;
-                        }
-                        else{
-                            x2*=2.2;
-                            y2*=2.2;
-                        }
+                        x2 = beacon_pos.get(getPos(major.get(i))).getFirst();
+                        y2 = beacon_pos.get(getPos(major.get(i))).getSecond();
                     } else {
-                        x3 = beacon_pos.get(j).getFirst()*4;
-                        y3 = beacon_pos.get(j).getSecond()*4;
-                        x3*=2.2;
-                        y3*=2.2;
+                        x3 = beacon_pos.get(j).getFirst();
+                        y3 = beacon_pos.get(j).getSecond();
                     }
                 }
             }
@@ -130,7 +127,7 @@ public class LocateUser
             }
 
 
-        }*/
+        }
     }
 
     public Pair<Double, ArrayList<String>> getDestinationInfo(Pair<Integer, Integer> user_loc, Pair<Integer, Integer> destination)

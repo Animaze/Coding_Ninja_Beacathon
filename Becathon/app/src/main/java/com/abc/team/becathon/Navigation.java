@@ -122,13 +122,13 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
             classSelected = getIntent().getStringExtra("selected_class");
             if(classSelected.equalsIgnoreCase("Python")){
                 ArrayList<Pair<Integer,Integer>> points = new ArrayList<>();
-                destinationLocation = new Pair<Integer, Integer>(0,24);
+                destinationLocation = new Pair<Integer, Integer>(-2,10);
                 points.add(destinationLocation);
                 plotPoints(points);
             }
             else{
                 ArrayList<Pair<Integer,Integer>> points = new ArrayList<>();
-                destinationLocation = new Pair<Integer, Integer>(24,24);
+                destinationLocation = new Pair<Integer, Integer>(-2,10);
                 points.add(destinationLocation);
                 plotPoints(points);
             }
@@ -149,7 +149,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
 
     @Override
     public void onBeaconServiceConnect() {
-        final Region region = new Region("myBeacons", /*Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d")*/null,null,null);
+        final Region region = new Region("myBeacons", Identifier.parse("b9407f30-f5f8-466e-aff9-25556b57fe6d"),null,null);
 
         beaconManager.setMonitorNotifier(new MonitorNotifier() {
             @Override
@@ -183,7 +183,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
                     Log.d(TAG,beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
 
                 }
-                //if(beacons.size() == 3){
+                if(beacons.size() == 3){
                     //
                     //changeInstruction(beacon.getId1()+" "+beacon.getId2()+" "+beacon.getId3()+" distance : "+beacon.getDistance());
 
@@ -201,6 +201,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
                         major.add(beacon.getId2().toString());
                     }
                     userLocation = LocateUser.getUserLocation(distances,major);
+                    Log.d(TAG,userLocation.getFirst() + "  "+ userLocation.getSecond());
                     if(userLocation.getFirst()!=-1000){
                         points.add(userLocation);
                         plotPoints(points);
@@ -212,7 +213,7 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
                             changeInstruction(nextDir);
                         }
                     }
-                //}
+                }
 
             }
         });
@@ -254,12 +255,12 @@ public class Navigation extends AppCompatActivity implements BeaconConsumer {
         });
         //myMap.invalidate();
 
-/*runOnUiThread(new Runnable() {
+runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 myMap.invalidate();
             }
-        });*/
+        });
     }
 
     public void clearCanvas(){
